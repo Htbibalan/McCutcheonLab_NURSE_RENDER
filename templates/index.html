@@ -42,7 +42,7 @@
 </head>
 <body>
   <h1>MCNURSE: Stereotactic Surgery Assistant</h1>
-  <p>Current Date & Time: {{ current_datetime }}</p>
+  <p>Current Server Date & Time: {{ current_datetime }}</p>
   
   <div class="container">
     <div class="left">
@@ -143,6 +143,8 @@
       const target_area = document.getElementById("target_area").value;
       const calculations = document.getElementById("log_box").value;
       const notes = document.getElementById("notes").value;
+      // Get the client's local date and time
+      const localTime = new Date().toLocaleString();
 
       fetch("/save", {
         method: "POST",
@@ -153,7 +155,8 @@
           surgeon: surgeon,
           target_area: target_area,
           calculations: calculations,
-          notes: notes
+          notes: notes,
+          local_time: localTime  // Send the client local time
         })
       })
       .then(response => response.blob())

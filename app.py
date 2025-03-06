@@ -18,7 +18,8 @@ def is_skull_level(num1, num2):
 
 @app.route('/')
 def home():
-    # Pass the current date/time to the template
+    # Here we still send the server's time for display if needed,
+    # but it won't be used in saving measurements.
     current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return render_template('index.html', current_datetime=current_datetime)
 
@@ -59,10 +60,13 @@ def save():
     target_area = data.get("target_area", "")
     calculations = data.get("calculations", "")
     notes = data.get("notes", "")
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # Use the client-provided local time if given
+    local_time = data.get("local_time")
+    if not local_time:
+        local_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     content = (
-        f"Date: {current_datetime}\n"
+        f"Date: {local_time}\n"
         f"Mouse ID: {mouse_id}\n"
         f"Mouse Bodyweight (g): {mouse_weight}\n"
         f"Surgeon: {surgeon}\n"
