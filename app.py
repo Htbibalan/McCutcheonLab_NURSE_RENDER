@@ -77,6 +77,35 @@ def save():
     response.headers["Content-Type"] = "text/plain"
     return response
 
+@app.route('/update_notes', methods=['POST'])
+def update_notes():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    if not file.filename.endswith('.txt'):
+        return jsonify({"error": "Only text files are allowed"}), 400
+
+    new_notes = request.form.get('new_notes', '')
+    if not new_notes:
+        return jsonify({"error": "No new notes provided"}), 400
+    
+    try:
+        original_content = file.read().decode('utf-8')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        updated_content = (
+            original_content +
+            f"\n\nAdditional Notes ({timestamp}):\n{new_notes}\n"
+        )
+        filename = file.filename.split('.')[0] + "_updated.txt"
+        response = make_response(updated_content)
+        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+        response.headers["Content-Type"] = "text/plain"
+        return response
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/health')
 def health_check():
     return "OK", 200

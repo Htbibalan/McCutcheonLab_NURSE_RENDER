@@ -33,6 +33,11 @@
       cursor: pointer;
       text-decoration: underline;
     }
+    .section {
+      margin-bottom: 30px;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -76,6 +81,16 @@
       <textarea id="notes" rows="15" style="width:100%;"></textarea>
       <button onclick="saveMeasurements()" style="background-color: red; color: white;">Save Measurements</button>
     </div>
+  </div>
+
+  <!-- New section for updating an existing measurement file -->
+  <div class="section">
+    <h3>Update Existing Measurement File</h3>
+    <label for="update_file">Upload Measurement File (.txt):</label>
+    <input type="file" id="update_file">
+    <label for="new_notes">New Notes:</label>
+    <textarea id="new_notes" rows="5" style="width:100%;" placeholder="Enter additional notes here"></textarea>
+    <button onclick="updateFile()">Update File</button>
   </div>
 
   <footer>
@@ -147,6 +162,39 @@
         const a = document.createElement("a");
         a.href = url;
         a.download = mouse_id + "_measurements.txt";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(error => console.error("Error:", error));
+    }
+
+    function updateFile() {
+      const fileInput = document.getElementById("update_file");
+      const file = fileInput.files[0];
+      const newNotes = document.getElementById("new_notes").value;
+      if (!file) {
+        alert("Please select a text file.");
+        return;
+      }
+      if (!newNotes) {
+        alert("Please enter new notes to add.");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("new_notes", newNotes);
+      fetch("/update_notes", {
+        method: "POST",
+        body: formData
+      })
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name.split('.')[0] + "_updated.txt";
         document.body.appendChild(a);
         a.click();
         a.remove();
