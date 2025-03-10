@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, make_response
 from decimal import Decimal
 from datetime import datetime
+import re
 
 app = Flask(__name__)
 
@@ -18,8 +19,6 @@ def is_skull_level(num1, num2):
 
 @app.route('/')
 def home():
-    # Here we still send the server's time for display if needed,
-    # but it won't be used in saving measurements.
     current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     return render_template('index.html', current_datetime=current_datetime)
 
@@ -33,10 +32,10 @@ def calculate():
     except (TypeError, ValueError):
         return jsonify({"error": "Invalid input numbers"}), 400
 
-    if choice in ('DV', 'AP', 'ML', 'DV Injection'):
+    if choice in ('AP', 'ML', 'DV INJECTION', 'DV FIBER'):
         result = add(num1, num2)
         message = f"{choice}: {round(result, 2)}"
-    elif choice == 'SKULL Leveling':
+    elif choice == 'SKULL LEVELING':
         if is_skull_level(num1, num2):
             message = "The Skull is level, proceed to the next step"
         elif num1 > num2:
@@ -53,14 +52,12 @@ def calculate():
 @app.route('/save', methods=['POST'])
 def save():
     data = request.get_json()
-    # Retrieve form fields
     mouse_id = data.get("mouse_id", "unknown")
     mouse_weight = data.get("mouse_weight", "")
     surgeon = data.get("surgeon", "")
     target_area = data.get("target_area", "")
     calculations = data.get("calculations", "")
     notes = data.get("notes", "")
-    # Use the client-provided local time if given
     local_time = data.get("local_time")
     if not local_time:
         local_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -102,7 +99,19 @@ def update_notes():
             original_content +
             f"\n\nAdditional Notes ({timestamp}):\n{new_notes}\n"
         )
-        filename = file.filename.split('.')[0] + "_updated.txt"
+        
+        # Generate a new filename with an incrementing number.
+        base_filename = file.filename.rsplit('.', 1)[0]
+        match = re.search(r'_(\d+)$', base_filename)
+        if match:
+            version = int(match.group(1))
+            base_name = base_filename[:match.start()]
+            new_version = version + 1
+        else:
+            base_name = base_filename
+            new_version = 1
+        filename = f"{base_name}_{new_version}.txt"
+
         response = make_response(updated_content)
         response.headers["Content-Disposition"] = f"attachment; filename={filename}"
         response.headers["Content-Type"] = "text/plain"

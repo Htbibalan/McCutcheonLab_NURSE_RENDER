@@ -60,11 +60,11 @@
 
       <label for="choice">Choose measurement - unit mm:</label>
       <select id="choice" onchange="updateLabels()">
-        <option value="DV">DV</option>
+        <option value="SKULL LEVELING">SKULL LEVELING</option>
         <option value="AP">AP</option>
         <option value="ML">ML</option>
-        <option value="SKULL Leveling">SKULL Leveling</option>
-        <option value="DV Injection">DV Injection</option>
+        <option value="DV INJECTION">DV INJECTION</option>
+        <option value="DV FIBER">DV FIBER</option>
       </select>
 
       <label id="num1_label" for="num1">Enter measured coordinate:</label>
@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <!-- New section for updating an existing measurement file -->
+  <!-- Section for updating an existing measurement file -->
   <div class="section">
     <h3>Update Existing Measurement File</h3>
     <label for="update_file">Upload Measurement File (.txt):</label>
@@ -105,7 +105,7 @@
       const choice = document.getElementById("choice").value;
       const num1Label = document.getElementById("num1_label");
       const num2Label = document.getElementById("num2_label");
-      if (choice === "SKULL Leveling") {
+      if (choice === "SKULL LEVELING") {
         num1Label.textContent = "Enter measured DV-Bregma:";
         num2Label.textContent = "Enter measured DV-Lambda:";
       } else {
@@ -143,7 +143,6 @@
       const target_area = document.getElementById("target_area").value;
       const calculations = document.getElementById("log_box").value;
       const notes = document.getElementById("notes").value;
-      // Get the client's local date and time
       const localTime = new Date().toLocaleString();
 
       fetch("/save", {
@@ -156,7 +155,7 @@
           target_area: target_area,
           calculations: calculations,
           notes: notes,
-          local_time: localTime  // Send the client local time
+          local_time: localTime
         })
       })
       .then(response => response.blob())
@@ -197,6 +196,7 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
+        // The server returns a filename with an incrementing number.
         a.download = file.name.split('.')[0] + "_updated.txt";
         document.body.appendChild(a);
         a.click();
